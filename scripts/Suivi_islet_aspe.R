@@ -3,6 +3,7 @@ library(tidyverse)
 library(DT)
 
 load(file = "../raw_data/rdata/tables_sauf_mei_2024_02_13_11_00_28.RData")
+# load(file = "../../../../projets/ASPE/raw_data/rdata/tables_sauf_mei_2024_02_13_11_00_28.RData")
 
 #########Passerelle#########
 passerelle <- mef_creer_passerelle()
@@ -91,6 +92,45 @@ ggplot2::ggplot(data=ipr,
                     fill=as.factor(annee)))+
   geom_bar(position="dodge", stat="identity")+
   labs(title = "Suivi IPR Islet", x = "station", y = "IPR", fill="Année")
+
+######### graphiques "à la Benoît" ###############
+# ajout des codes couleur au dataframe classe_ipr
+classe_ipr_islet <- classe_ipr %>%
+  aspe::ip_completer_classes_couleur()
+
+# graphique pour l'IPR
+aspe::gg_temp_ipr(df_ipr = ipr,
+                  var_id_sta = libelle_sta_islet,
+                  var_ipr = ipr,
+                  df_classes = classe_ipr_islet) +
+  coord_cartesian(ylim = c(0, 45))
+
+# Pour les métriques
+mes_sites <- levels(metric_long$libelle_sta_islet)
+graph_metr <- list()
+
+# faite varier l'index de 1 à 3
+site <- 3
+
+metric_long %>% 
+  filter(libelle_sta_islet == mes_sites[site]) %>% 
+  ggplotExtra::gg_lattice_ipr(
+    var_y = metric_value,
+    var_lattice = metric,
+    metriques = TRUE,
+    interactif = FALSE,
+    df_classes = classe_ipr_islet,
+    nb_colonnes = 7
+  ) +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.major.x = ggplot2::element_line(size = .2, color = "grey80"),
+    panel.grid.major.y = ggplot2::element_blank()
+  ) +
+  ggplot2::ggtitle(mes_sites[site])
+
+######### fin graphique "à la Benoît" ###############
+
 
 ######### Traçage graphique en ligne IPR par année sous ggplot ###############
 ggplot2::ggplot(data=ipr,
